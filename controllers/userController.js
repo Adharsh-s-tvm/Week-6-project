@@ -1,18 +1,18 @@
-const collection = require("../models/mongodb");
-const userAuthenticated = require("../middleware/userauthmildware");
+const collection = require("../models/mongodb"); // MongoDB collection
+const userAuthenticated = require("../middleware/userauthmildware"); // User authentication middleware
 
-
-///////////////////Signup page/////////////////////
+// Signup Page
 exports.signup = (req, res) => {
   if (req.session.user) {
-    res.redirect("/user/home");
+    res.redirect("/user/home"); // Redirect if already logged in
   } else {
-    res.render("user/signup", { message: null });
+    res.render("user/signup", { message: null }); // Render signup page
   }
 };
 
+// Signup POST
 exports.signuppost = async (req, res) => {
-  console.log(req.body, "signup details");
+  console.log(req.body, "signup details"); // Log signup details
 
   const userData = {
     name: req.body.name,
@@ -20,65 +20,62 @@ exports.signuppost = async (req, res) => {
     password: req.body.password,
   };
 
-  const existingUser = await collection.findOne({ email: userData.email });
+  const existingUser = await collection.findOne({ email: userData.email }); // Check if user already exists
   if (existingUser) {
-    res.render("user/signup", { message: "email already exists" });
+    res.render("user/signup", { message: "email already exists" }); // Error message for existing user
   } else {
-    await collection.insertMany(userData);
-    res.redirect("/user/login");
+    await collection.insertMany(userData); // Create new user
+    res.redirect("/user/login"); // Redirect to login
   }
 };
 
-
-///////////////////Login page/////////////////////
+// Login Page
 exports.login = (req, res) => {
   if (req.session.user) {
-    res.redirect("/user/home");
+    res.redirect("/user/home"); // Redirect if already logged in
   } else {
-    res.render("user/login", { message: null });
+    res.render("user/login", { message: null }); // Render login page
   }
 };
 
+// Login POST
 exports.loginpost = async (req, res) => {
   try {
-    const foundUser = await collection.findOne({ email: req.body.email });
+    const foundUser = await collection.findOne({ email: req.body.email }); // Find user by email
 
     if (foundUser.password === req.body.password) {
       console.log("Auth done");
-      req.session.user = req.body.email;
+      req.session.user = req.body.email; // Set session for logged-in user
       req.session.name = req.body.name;
-      res.redirect("/user/home");
+      res.redirect("/user/home"); // Redirect to home
     } else {
-      res.render("user/login", { message: "wrong password" });
+      res.render("user/login", { message: "wrong password" }); // Error message for incorrect password
     }
   } catch (error) {
-    res.render("user/login", { message: "email id not registred" });
+    res.render("user/login", { message: "email id not registred" }); // Error message for unregistered email
   }
 };
 
-
-///////////////////Home page/////////////////////
+// Home Page
 exports.home = [
-  userAuthenticated,
+  userAuthenticated, // User authentication middleware
   async (req, res) => {
     try {
-      const user = await collection.findOne({ email: req.session.user });
+      const user = await collection.findOne({ email: req.session.user }); // Find user by session email
       if (user) {
-        res.render("user/home", {
-          name: user.name,
-          mail_id: req.session.user,
-        });
+        res.render("user/home", { name: user.name, mail_id: req.session.user }); // Render home page
       } else {
         req.session.user = false;
-        res.redirect("/user/login");
+        res.redirect("/user/login"); // Redirect to login if no user found
       }
     } catch (error) {
-      onsole.error("Error happened", error.message);
+      console.error("Error happened", error.message); // Log error
     }
   },
 ];
 
+// Logout
 exports.logout = (req, res) => {
-  req.session.user = false;
-  res.redirect("/user/login");
+  req.session.user = false; // Destroy session
+  res.redirect("/user/login"); // Redirect to login
 };
