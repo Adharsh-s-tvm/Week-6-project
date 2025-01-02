@@ -30,11 +30,15 @@ exports.signuppost = async (req, res) => {
 };
 
 // Login Page
-exports.login = (req, res) => {
+exports.login = (req, res) =>{
   if (req.session.user) {
     res.redirect("/user/home"); // Redirect if already logged in
   } else {
-    res.render("user/login", { message: null }); // Render login page
+    let alert = null;
+    if(req.query){
+      alert = req.query.error      
+    }
+    res.render("user/login", { message: alert }); // Render login page
   }
 };
 
@@ -49,10 +53,10 @@ exports.loginpost = async (req, res) => {
       req.session.name = req.body.name;
       res.redirect("/user/home"); // Redirect to home
     } else {
-      res.render("user/login", { message: "wrong password" }); // Error message for incorrect password
+      res.redirect("/user/login?error=Invalid username or password"); // Error message for incorrect password
     }
   } catch (error) {
-    res.render("user/login", { message: "email id not registred" }); // Error message for unregistered email
+    res.redirct("user/login", { message: "User not found" }); // Error message for unregistered email
   }
 };
 

@@ -6,7 +6,11 @@ exports.login = (req, res) => {
   if (req.session.admin) {
     res.redirect("/admin/home"); // Redirect if already logged in
   } else {
-    res.render("admin/login", { message: null }); // Render login page
+    let alert = null
+    if(req.query){
+      alert = req.query.error;
+    }  
+    res.render("admin/login", { message: alert }); // Render login page
   }
 };
 
@@ -22,7 +26,7 @@ exports.loginpost = (req, res) => {
     req.session.admin = req.body.email; // Set session
     res.redirect("/admin/home"); // Redirect to home
   } else {
-    res.render("admin/login", { message: "Admin email id or password is incorrect" }); // Error message
+    res.redirect("/admin/login?error=Invalid username or password"); // Error message
   }
 };
 
